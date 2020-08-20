@@ -41,3 +41,24 @@ summary(Modelo1)
 p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
 
 summary(p1)
+
+###
+#
+#       FUNCION PARA ENCONTRAR MODELO OPTIMO
+#
+##
+
+# LA IDEA ES ITERAR MODIFICANDO EL CONF LEVEL Y EL MIN CASES, COLOCAR EN UNA TABLA LA INFORMACION Y MOSTRAR GRAFICAS
+# PARA DETERMINAR EL ARBOL IDEAL
+
+# Itero de 1 a 5 Min cases, para cada iteracion se guardara
+# TAMAÑO DEL ARBOL
+# ACCURACY
+# 
+
+for (i in 1:5){
+        
+}
+
+
+
