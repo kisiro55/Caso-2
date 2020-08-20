@@ -53,6 +53,51 @@ library(MASS)           #Utilizado para la estimacion del mve en distancias de M
 
 # Introducción
 
+# Fase Exploratoria: Parte I (Gaby y Nacho?)
+
+1. ¿Si Ud. tuviera que implementar un sistema de retención de clientes, considera que Data Mining puede ser de ayuda en la detección de clientes próximos a abandonar la compañía?
+2. ¿Qué tipo de tarea o tareas de Data Mining se podrían aplicar?
+3. ¿Qué tipo de datos requeriría para poder aplicar las tareas de Data Mining seleccionadas?
+4. ¿Qué parámetros debería establecer para la tarea o tareas y que valores asignaría a cada uno?
+5. Si observa alguna particularidad en los datos de este problema con respecto al tiempo, proponga el tratamiento especial que considere adecuado.
+6. Considere el caso de una compañía de telefonía fija con diversas alternativas de Churn (baja del cliente completo, líneas, Internet, paquetes urbanos, etc.).
+        a. ¿Cómo aplicaría los resultados obtenidos del mining?
+
+# Fase Exploratoria: Parte II (?)
+
+1. Explore si hay valores faltantes en alguna de las variables. 
+2. Compare los campos area code y state. Discuta cualquier aparente anormalidad. 
+3. Emplee gráficos para determinar visualmente si hay algún valor extremo en la cantidad de llamadas a la línea de atención al cliente. 
+4. Identifique el rango de llamadas a customer service, que debieran considerarse outliers empleando: 
+        a. El método de puntaje z 
+        b. El método del RIC.
+5. Transforme la variable day minutes empleando estandarización por puntaje Z. 
+6. Trabaje con los sesgos: 
+        a. Calcule el sesgo de la variable day minutes. 
+        b. Calcule el sesgo de la variable estandarizada por puntaje Z para day minutes. Comente. 
+        c. Basado en el valor del sesgo, ¿Considera que la variable se encuentra sesgada o es casi perfectamente simétrica? 
+7.Construya el normal probability plot de la variable day minutes. Comente sobre la normalidad de los datos. Análisis Descriptivo Previo del dataset churn 
+8.Trabaje con la variable international minutes: 
+        a. Construya el normal probability plot de la variable.
+        b. ¿Que evita que esta variable tenga una distribución normal? 
+        c. Construya una variable indicadora para lidiar con la situación anterior. 
+        d. Construya un normal probability plot de la variable derivada nonzero international minutes. Comente en relación a la normalidad de la variable derivada. 
+9. Transforme la variable night minutes empleando estandarización por puntaje Z. Empleando un gráfico, describa el rango de los valores estandarizados.
+
+# Modelos (Eze y Hernan?)
+
+1. Observar las distribuciones de las variables
+2. Buscar y eliminar variables correlacionadas.
+3. Analizar las proporciones de churn para distintas variables.
+4. Particionar los datos. 
+5. Generar tres modelos de árbol. 
+6. Evaluar los modelos.
+
+
+# Conclusiones (Todos?)
+
+
+
 ```{r datasets, include=FALSE, message=FALSE}
 
 # Limpieza de entorno
@@ -287,5 +332,5 @@ subscriptores.training <- subscriptores.dep[subscriptores.dep$Test_Split > 0.1,]
 ```
 
 
-# Feature Engineering
+
 
