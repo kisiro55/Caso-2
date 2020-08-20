@@ -10,13 +10,16 @@ Entrenamiento <- function(DFTrain, DFTags, ConfLev, MinNum){
 }
 
 
+
 ####
 # Agrupar variables para simplificar (PENDIENTE)
 #
 
-##
-# ESTANDARIZACION DE VARIABLES NUMERICAS
-#
+################################################
+#                                              #
+# ESTANDARIZACION DE VARIABLES NUMERICAS       #
+#                                              #
+################################################
 
 # Estandarizo el training
 idx <- which(sapply(subscriptores.training[,1:17], class) %in% c("numeric","integer"))
@@ -42,11 +45,13 @@ p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
 
 summary(p1)
 
-###
+
+################################################3
+#
 #
 #       FUNCION PARA ENCONTRAR MODELO OPTIMO
 #
-##
+#################################################
 
 # LA IDEA ES ITERAR MODIFICANDO EL CONF LEVEL Y EL MIN CASES, COLOCAR EN UNA TABLA LA INFORMACION Y MOSTRAR GRAFICAS
 # PARA DETERMINAR EL ARBOL IDEAL
@@ -57,6 +62,7 @@ summary(p1)
 # 
 
 for (i in 1:5){
+        
         
 }
 
