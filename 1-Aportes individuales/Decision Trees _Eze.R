@@ -59,9 +59,14 @@ summary(p1)
 # ACCURACY
 # 
 
+Informacion <- data.frame("CONF","SIZE TREE","ACCURACY","M")
+ConfBase <- 0.05
 for (i in 1:5){
-        
-        
+        for (j in 0.05:0.95) {
+              Conf  <- ConfBase*j
+              Modelo <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, Conf,i )
+              
+        }
 }
 
 
