@@ -35,6 +35,11 @@ MANZL, JUAN JOSE
 \end{center}
 
 \clearpage
+\newpage
+\tableofcontents 
+<!-- \listoffigures -->
+<!-- \listoftables -->
+\newpage
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -166,6 +171,20 @@ for (i in 1:length(columnas.cat)){
     ylab("Cantidad") + xlab(colnames(subscriptores.raw[columnas.cat[i]]))
 }
 ```
+\newpage
+\begin{center}
+
+APENDICE
+ 
+\end{center}
+\newpage
+# Graficos multivariados para variables cualitativas- Observaciones sobre el grafico
+
+1. La proporcion de subscriptores que no tienen Plan de Voice Mail es mayor, en linea con lo observado en los barplots
+2. La cantidad de subscriptores que no tienen Plan Internacional es mayor independientemente de si tienen o no Plan de Voicemail.
+3. La proporcion de churn es menor entre los subscripores SIN Voice Mail y SIN Plan Internacional en comparacion con los subscriptores SIN Voice Mail y CON Plan Internacional donde la proporcion de churn y no churn son mas parejas
+4. La proporcion de churn es menor entre los subscripores CON Voice Mail y SIN Plan Internacional en comparacion con los subscriptores CON Voice Mail y CON Plan Internacional donde la proporcion de churn y no churn son mas parejas
+5. Por los puntos 3 y 4 las proporciones de churn y no churn son mas similares en subscriptores con Planes internacionales, independientemente de si tienen o no Plan de Voicemail.
 
 ```{r plot_hist, echo=FALSE, fig.cap="Histograma", fig.height=4, fig.width=8}
 
@@ -195,13 +214,6 @@ ggpairs(subscriptores.raw[columnas.num],
 
 ```
 
-# Graficos multivariados para variables cualitativas- Observaciones sobre el grafico
-
-1. La proporcion de subscriptores que no tienen Plan de Voice Mail es mayor, en linea con lo observado en los barplots
-2. La cantidad de subscriptores que no tienen Plan Internacional es mayor independientemente de si tienen o no Plan de Voicemail.
-3. La proporcion de churn es menor entre los subscripores SIN Voice Mail y SIN Plan Internacional en comparacion con los subscriptores SIN Voice Mail y CON Plan Internacional donde la proporcion de churn y no churn son mas parejas
-4. La proporcion de churn es menor entre los subscripores CON Voice Mail y SIN Plan Internacional en comparacion con los subscriptores CON Voice Mail y CON Plan Internacional donde la proporcion de churn y no churn son mas parejas
-5. Por los puntos 3 y 4 las proporciones de churn y no churn son mas similares en subscriptores con Planes internacionales, independientemente de si tienen o no Plan de Voicemail.
 
 ```{r preprocesamiento2, include=FALSE, message=FALSE}
 
