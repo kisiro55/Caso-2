@@ -1,24 +1,4 @@
-####################################################################################################
-#                                     MAESTRIA EN CIENCIA DE DATOS                                 #    
-#                                       INTRODUCCION A DATAMINING                                  #    
-#                                                                                                  # 
-#                                              ALUMNOs:                                            #
-#                                       Mag. FARACH, VERONICA                                      #
-#                                    Lic. HEREDIA BAEK, GABRIELA                                   #
-#                                         Mag. KINA, HERNAN                                        #
-#                                        Ing. LANZA, EZEQUIEL                                      #
-#                                         Lic. LAXI, IGNACIO                                       #    
-#                                       Mag. MANZL, JUAN JOSE                                      #
-#                                                                                                  #
-#                                       FACULTAD DE INGENIERIA                                     #
-#                                         UNIVERSIDAD AUSTRAL                                      #
-#                                                                                                  #    
-####################################################################################################
 
-## Asignatura: Introduccion a Datamining
-## Docentes: 
-
-setwd("~/Documents/1_[DSc]/MDSc/5.Introduccion al Data Mining/TPs/Caso 2")
 # PAQUETES NECESARIOS.
 library(readxl)         #Lectura de archivos
 library(gridExtra)      #Ordenacion de graficos en pantalla
@@ -32,11 +12,13 @@ library(MASS)           #Utilizado para la estimacion del mve en distancias de M
 # Limpieza de entorno
 rm(list = ls())
 
+# Recordar setwd al path correspondiente
+
 # Lectura del archivo Excel mediante ventana emergente
 subscriptores.raw <- read.csv2(file.choose())
 
 
-# Verficacion de las variables y su tipo
+# Verificacion de las variables y su tipo
 str(subscriptores.raw)
 
 # La variable Area_Code se cargo como numerica pero en realidad es una variable categorica.
@@ -141,8 +123,6 @@ ggpairs(subscriptores.raw[columnas.num],
 # Planes internacionales, independientemente de si tienen o no Plan de Voicemal.
 doubledecker(Area_Code ~ Vmail_Plan + Intl_Plan + Churn, data = subscriptores.raw,
              gp = gpar(fill = c("Green", "Red", "Blue")))
-
-
 
 # doubledecker(Area_Code ~ Vmail_Plan + Churn, data = subscriptores,
 #              gp = gpar(fill = c("Green", "Red", "Blue")))
@@ -253,6 +233,4 @@ subscriptores.dep$Test_Split <- runif(dim(subscriptores.dep)[1])
 subscriptores.test <- subscriptores.dep[subscriptores.dep$Test_Split <= 0.1,]
 subscriptores.training <- subscriptores.dep[subscriptores.dep$Test_Split > 0.1,]
 
-
-##############HK IDEAS de feature ENG ####################
 
