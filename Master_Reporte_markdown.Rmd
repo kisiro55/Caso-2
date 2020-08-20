@@ -329,6 +329,8 @@ subscriptores.dep$Test_Split <- runif(dim(subscriptores.dep)[1])
 # a training
 subscriptores.test <- subscriptores.dep[subscriptores.dep$Test_Split <= 0.1,]
 subscriptores.training <- subscriptores.dep[subscriptores.dep$Test_Split > 0.1,]
+
+#Ejemplo de edicion
 ```
 
 
