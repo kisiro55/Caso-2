@@ -46,7 +46,6 @@ summary(Modelo1)
 # Se procede a probar con el subset de Test
 p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
 matriz <- confusionMatrix(data = p1, reference = Sub_Test_EST1$Churn, positive = "True.")
-matriz$
 summary(p1)
 
 ################################################
@@ -61,13 +60,21 @@ summary(p1)
 # Itero de 1 a 5 Min cases, para cada iteracion se guardara
 # TAMAÑO DEL ARBOL
 # ACCURACY
+# RECALL
+# CF
+# MIN NUM
 
 # Se crean los Niveles de Confianza para iterar
 ConfBase <- seq(0.05, 0.9, by = 0.05)
 Resultados <- data.frame()
-Resultados <- data.frame("CF", "MinNUM" , "Tamano", "Accuracy")
+Resultados <- data.frame("CF", "MinNUM" , "Tamano", "Recall", "Accuracy")         ## EL NOMBRE DE LA COLUMNA ES LA QUE VA A MOSTRAR DE LA MATR CONF
 
 ModeloITE<- list()
+
+######
+# ITERACION CON 1ER DATA SET (VIENE DIRECTO DEL SCRIPT DE JUAN), EN EL PASO ANTERIOR HABRIA QUE ARMAR 2 DS MAS CON CONDICIONES DIFERENTES
+#
+
 pos <- 0
 
 for (i in 1:5){
@@ -76,12 +83,19 @@ for (i in 1:5){
                 ModeloITE <-  Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, Conf,i )  #GENERAR MODELO
                 PredITE <- predict(ModeloITE, Sub_Test_EST1[1:15])
                 matrizConf <- confusionMatrix(data = PredITE, reference = Sub_Test_EST1$Churn, positive = "True.")
-           
+          
                 Datos <- c(ModeloITE$control$CF,ModeloITE$control$minCases,
-                           ModeloITE$size,matrizConf$overall)                                                       #GUARDO CF, MIN     
+                           ModeloITE$size,matrizConf$byClass)                                                      
                 Resultados <- rbind(Resultados,Datos)   
                 pos <- pos + 1
                 }
 }
 
 print(Resultados)
+
+
+
+## SE DEBERIA ELEGIR EL QUE MEJOR ELIJA A LOS POSIBLES CHURN
+
+
+
