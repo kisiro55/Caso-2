@@ -1,5 +1,6 @@
 library (C50)
-library(foreign) 
+library(foreign)
+library(caret)
 
 ## FUNCION PARA ENTRENAMIENTO
 
@@ -38,10 +39,13 @@ Sub_Test_EST1 <- Sub_Test_EST1[,-14]
 # Para la realizacion del primer modelo se va proceder a utilizar TODAS las variables 
 Modelo1 <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, 0.25,2 )
 
+Modelo1$control$CF
+
 summary(Modelo1)
 
 # Se procede a probar con el subset de Test
 p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
+matriz <- confusionMatrix(data = p1, reference = Sub_Test_EST1$Churn, positive = "True.")
 
 summary(p1)
 
@@ -68,6 +72,26 @@ for (i in 1:5){
               
         }
 }
+# Se crean los Niveles de Confianza para iterar
+ConfBase <- seq(0.05, 0.9, by = 0.05)
+Resultados <- data.frame()
+Resultados <- data.frame("CF", "MinNUM" , "Tamano")
 
+ModeloITE<- list()
+pos <- 0
 
+for (i in 1:5){
+        for (j in 1:length(ConfBase)) {
+                Conf  <- ConfBase[j]
+                ModeloITE <-  Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, Conf,i )  #GENERAR MODELO
+                p1 <- predict(ModeloITE, Sub_Test_EST1[1:15])
+                matrizConf <- confusionMatrix(data = p1, reference = Sub_Test_EST1$Churn, positive = "True.")
+           
+                Datos <- c(ModeloITE$control$CF,ModeloITE$control$minCases,
+                           ModeloITE$size,)                                                       #GUARDO CF, MIN     
+                Resultados <- rbind(Resultados,Datos)   
+                pos <- pos + 1
+                }
+}
 
+Modelos1
