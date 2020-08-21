@@ -46,7 +46,7 @@ summary(Modelo1)
 # Se procede a probar con el subset de Test
 p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
 matriz <- confusionMatrix(data = p1, reference = Sub_Test_EST1$Churn, positive = "True.")
-
+matriz$
 summary(p1)
 
 ################################################
@@ -61,21 +61,11 @@ summary(p1)
 # Itero de 1 a 5 Min cases, para cada iteracion se guardara
 # TAMAÑO DEL ARBOL
 # ACCURACY
-# 
 
-Informacion <- data.frame("CONF","SIZE TREE","ACCURACY","M")
-ConfBase <- 0.05
-for (i in 1:5){
-        for (j in 0.05:0.95) {
-              Conf  <- ConfBase*j
-              Modelo <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, Conf,i )
-              
-        }
-}
 # Se crean los Niveles de Confianza para iterar
 ConfBase <- seq(0.05, 0.9, by = 0.05)
 Resultados <- data.frame()
-Resultados <- data.frame("CF", "MinNUM" , "Tamano")
+Resultados <- data.frame("CF", "MinNUM" , "Tamano", "Accuracy")
 
 ModeloITE<- list()
 pos <- 0
@@ -84,14 +74,14 @@ for (i in 1:5){
         for (j in 1:length(ConfBase)) {
                 Conf  <- ConfBase[j]
                 ModeloITE <-  Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, Conf,i )  #GENERAR MODELO
-                p1 <- predict(ModeloITE, Sub_Test_EST1[1:15])
-                matrizConf <- confusionMatrix(data = p1, reference = Sub_Test_EST1$Churn, positive = "True.")
+                PredITE <- predict(ModeloITE, Sub_Test_EST1[1:15])
+                matrizConf <- confusionMatrix(data = PredITE, reference = Sub_Test_EST1$Churn, positive = "True.")
            
                 Datos <- c(ModeloITE$control$CF,ModeloITE$control$minCases,
-                           ModeloITE$size,)                                                       #GUARDO CF, MIN     
+                           ModeloITE$size,matrizConf$overall)                                                       #GUARDO CF, MIN     
                 Resultados <- rbind(Resultados,Datos)   
                 pos <- pos + 1
                 }
 }
 
-Modelos1
+print(Resultados)
