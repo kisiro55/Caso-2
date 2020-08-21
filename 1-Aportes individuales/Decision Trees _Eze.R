@@ -36,18 +36,6 @@ Sub_Test_EST1 <- cbind(Sub_Test_EST1,subscriptores.test[,-idx] )
 #Elimino varibale Phone
 Sub_Test_EST1 <- Sub_Test_EST1[,-14]
 
-# Para la realizacion del primer modelo se va proceder a utilizar TODAS las variables 
-Modelo1 <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, 0.25,2 )
-
-Modelo1$control$CF
-
-summary(Modelo1)
-
-# Se procede a probar con el subset de Test
-p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
-matriz <- confusionMatrix(data = p1, reference = Sub_Test_EST1$Churn, positive = "True.")
-summary(p1)
-
 ################################################
 #
 #       FUNCION PARA ENCONTRAR MODELO OPTIMO
@@ -98,4 +86,21 @@ print(Resultados)
 ## SE DEBERIA ELEGIR EL QUE MEJOR ELIJA A LOS POSIBLES CHURN
 
 
+################################################
+#
+#                       AUX
+#
+#################################################
+
+# Para la realizacion del primer modelo se va proceder a utilizar TODAS las variables 
+Modelo1 <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, 0.25,2 )
+
+Modelo1$control$CF
+
+summary(Modelo1)
+
+# Se procede a probar con el subset de Test
+p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
+matriz <- confusionMatrix(data = p1, reference = Sub_Test_EST1$Churn, positive = "True.")
+summary(p1)
 
