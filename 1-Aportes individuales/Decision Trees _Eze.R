@@ -54,8 +54,9 @@ Sub_Test_EST1 <- Sub_Test_EST1[,-14]
 
 # Se crean los Niveles de Confianza para iterar
 ConfBase <- seq(0.05, 0.9, by = 0.05)
-Resultados <- data.frame()
-Resultados <- data.frame("CF", "MinNUM" , "Tamano", "Recall", "Accuracy")         ## EL NOMBRE DE LA COLUMNA ES LA QUE VA A MOSTRAR DE LA MATR CONF
+Resultados <- 0
+
+## EL NOMBRE DE LA COLUMNA ES LA QUE VA A MOSTRAR DE LA MATR CONF
 
 ModeloITE<- list()
 
@@ -65,7 +66,7 @@ ModeloITE<- list()
 
 pos <- 0
 
-for (i in 1:5){
+for (i in 1:10){
         for (j in 1:length(ConfBase)) {
                 Conf  <- ConfBase[j]
                 ModeloITE <-  Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, Conf,i )  #GENERAR MODELO
@@ -78,8 +79,9 @@ for (i in 1:5){
                 pos <- pos + 1
                 }
 }
+Resultados <- Resultados[-c(1),] #ELIMINO PRIMERA FILA QUE POR EL RBIND SE COLOCO
 
-print(Resultados)
+head(Resultados)
 
 
 
