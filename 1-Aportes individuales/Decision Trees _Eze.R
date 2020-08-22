@@ -49,21 +49,29 @@ Subs.Test.V2 <-  select( Subs.Test.V2,-Phone, -Mahalanobis,- Outlier, -Test_Spli
 #                                              #
 ################################################
 
+<<<<<<< HEAD
 #####################   OPCION 1    ################################
+=======
+## TRAINING
+>>>>>>> 80601f6b03dfe7ef7831a32acc6dff9fe2d74115
 # Estandarizo el training
 idx <- which(sapply(subscriptores.training[,1:17], class) %in% c("numeric","integer"))
 Sub_Train_EST1 <- scale(subscriptores.training[,idx])
 Sub_Train_EST1 <- cbind(Sub_Train_EST1,subscriptores.training[,-idx] ) 
-#Elimino varibale Phone
+
+#Elimino variable Phone (por ser simil a un ID)
 Sub_Train_EST1 <- Sub_Train_EST1[,-14]
 
+## TEST
 #Estandarizar Test
 idx <- which(sapply(subscriptores.test[,1:16], class) %in% c("numeric","integer"))
 Sub_Test_EST1 <- scale(subscriptores.test[,idx])
 Sub_Test_EST1 <- cbind(Sub_Test_EST1,subscriptores.test[,-idx] ) 
-#Elimino varibale Phone
+
+#Elimino variable Phone(por ser simil a un ID)
 Sub_Test_EST1 <- Sub_Test_EST1[,-14]
 
+<<<<<<< HEAD
 #####################   OPCION 2    ################################
 # Estandarizo el training
 idx <- which(sapply(Subs.Train.V2[,1:ncol(Subs.Train.V2)], class) %in% c("numeric","integer"))
@@ -75,6 +83,28 @@ idx <- which(sapply(Subs.Test.V2[,1:ncol(Subs.Test.V2)], class) %in% c("numeric"
 Sub_Test_EST2 <- scale(Subs.Test.V2[,idx])
 Sub_Test_EST2 <- cbind(Sub_Test_EST2,Subs.Test.V2[,-idx] ) 
 
+=======
+
+# Chequea igual cant de columnas
+dim(Sub_Test_EST1)[2] - dim(Sub_Train_EST1)[2]
+
+# Para la realizacion del primer modelo se va proceder a utilizar TODAS las variables 
+Modelo1 <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, 0.25, 2)
+
+summary(Modelo1)
+
+# plot(Modelo1) # no funciona, no se por que. abajo probe de otra manera y funciona.
+# Se procede a probar con el subset de Test
+p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
+
+summary(p1)
+
+### No me funciono el plot y probe la formula directa. funciona el plot (es horrible) pero le tengo que agregar todavia los parametros --> chequear
+tree_mod <- C5.0(x = Sub_Train_EST1[,1:15], y = Sub_Train_EST1$Churn)
+
+summary(tree_mod)
+plot(tree_mod)
+>>>>>>> 80601f6b03dfe7ef7831a32acc6dff9fe2d74115
 
 ################################################
 #
