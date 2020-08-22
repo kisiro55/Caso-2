@@ -14,7 +14,6 @@ Entrenamiento <- function(DFTrain, DFTags, ConfLev, MinNum){
 
 ####
 # Agrupar variables para simplificar (PENDIENTE)
-#
 
 
 # OPCION A : DATA SET COMPLETO
