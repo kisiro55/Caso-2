@@ -232,3 +232,18 @@ subscriptores.dep$Test_Split <- runif(dim(subscriptores.dep)[1])
 subscriptores.test <- subscriptores.dep[subscriptores.dep$Test_Split <= 0.1,]
 subscriptores.training <- subscriptores.dep[subscriptores.dep$Test_Split > 0.1,]
 
+View(subscriptores.test)
+dim(subscriptores.training)
+
+##########################################################
+## EXPORTACION DE CSV (idealmente ya limpios para modelar)
+##########################################################
+
+# Lo exporto para trabajarlo en otro file y separar la fase de preparacion con la de modelaje.
+write.csv(subscriptores.test,'subscr_test_v1.csv')
+write.csv(subscriptores.training,'subscr_training_v1.csv')
+
+#chequear que al importarlo hay que eliminar la primer columna de codigo
+
+
+
