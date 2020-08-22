@@ -84,8 +84,12 @@ Resultados <- Resultados[-c(1),] #ELIMINO PRIMERA FILA QUE POR EL RBIND SE COLOC
 head(Resultados)
 
 
-
 ## SE DEBERIA ELEGIR EL QUE MEJOR ELIJA A LOS POSIBLES CHURN
+
+
+## HACER UN SCORING
+
+
 
 
 ################################################
