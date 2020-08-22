@@ -243,7 +243,7 @@ dim(subscriptores.training)
 write.csv(subscriptores.test,'subscr_test_v1.csv')
 write.csv(subscriptores.training,'subscr_training_v1.csv')
 
-#chequear que al importarlo hay que eliminar la primer columna de codigo
+# Chequear que al importarlo hay que eliminar la primer columna de codigo
 
 
 

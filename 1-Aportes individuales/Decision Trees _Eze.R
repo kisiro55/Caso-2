@@ -54,7 +54,7 @@ Modelo1 <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, 0.25, 2)
 
 summary(Modelo1)
 
-plot(Modelo1)
+# plot(Modelo1) # no funciona, no se por que. abajo probe de otra manera y funciona.
 # Se procede a probar con el subset de Test
 p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
 
