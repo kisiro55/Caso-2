@@ -16,6 +16,14 @@ Entrenamiento <- function(DFTrain, DFTags, ConfLev, MinNum){
 # Agrupar variables para simplificar (PENDIENTE)
 #
 
+
+# OPCION A : DATA SET COMPLETO
+
+# OPCION B : PUEDE SER GENERAR UNA VARIABLE ADICIONAL CATEGORICA QUE VINCULE LA CANTIDAD DE LLAMADAS CON LOS MINUTOS HABLADOS PARA
+# CATEGORIZAR TIPO DE CLIENTES
+
+# OPCION C : AGRUPAR VARIABLES CUALI EN CUANTI CADA UNA POR SEPARADO.
+
 ################################################
 #                                              #
 # ESTANDARIZACION DE VARIABLES NUMERICAS       #
@@ -84,8 +92,12 @@ Resultados <- Resultados[-c(1),] #ELIMINO PRIMERA FILA QUE POR EL RBIND SE COLOC
 head(Resultados)
 
 
-
 ## SE DEBERIA ELEGIR EL QUE MEJOR ELIJA A LOS POSIBLES CHURN
+
+
+## HACER UN SCORING
+
+
 
 
 ################################################
