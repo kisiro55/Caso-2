@@ -1,6 +1,8 @@
 library (C50)
 library(foreign)
 library(caret)
+library(dplyr)
+install.packages("dplyr")
 
 ## FUNCION PARA ENTRENAMIENTO
 
@@ -10,15 +12,32 @@ Entrenamiento <- function(DFTrain, DFTags, ConfLev, MinNum){
   return(modelo)
 }
 
-####
 # TRATAMIENTO DE VARIABLES (PENDIENTE)
 
 
-# OPCION A : DATA SET COMPLETO
+# OPCION 1 : DATA SET COMPLETO
 
-# OPCION B : PUEDE SER GENERAR UNA VARIABLE ADICIONAL CATEGORICA QUE VINCULE LA CANTIDAD DE LLAMADAS CON LOS MINUTOS HABLADOS PARA
-# CATEGORIZAR TIPO DE CLIENTES
+# OPCION 2 : CATEGORIZAR ALGUNAS VARIABLES
 
+Subs.Train.V2 <- subscriptores.training
+
+## MODIFICACION DE LA VARIABLLE DE LLAMADAS AL CENTRO DE CONTACTO
+Subs.Train.V2$CustServ_Calls <- as.factor(Subs.Train.V2$CustServ_Calls)
+
+levels(Subs.Train.V2$CustServ_Calls)
+normales <- c("0", "1", "2", "3")                    
+quejosos <- c( "4", "5", "6","7", "8", "9")
+
+Subs.Train.V2$CustServ_Calls <- ifelse(Subs.Train.V2$CustServ_Calls %in% normales, "Normales", "Quejosos")
+table(Subs.Train.V2$CustServ_Calls)
+
+# QUITAR VARIABLES QUE NO SUMAN 
+
+Subs.Train.V2 <- select(Subs.Train.V2, -Phone, -Mahalanobis)
+
+colnames(Subs.Train.V2)
+
+?filter
 # OPCION C : AGRUPAR VARIABLES CUALI EN CUANTI CADA UNA POR SEPARADO.
 
 ################################################
@@ -66,8 +85,8 @@ Resultados <- 0
 ModeloITE<- list()
 
 ######
-# ITERACION CON 1ER DATA SET (VIENE DIRECTO DEL SCRIPT DE JUAN), EN EL PASO ANTERIOR HABRIA QUE ARMAR 2 DS MAS CON CONDICIONES DIFERENTES
-#
+# ITERACION CON DATA SET 1
+#####
 
 pos <- 0
 
