@@ -220,7 +220,6 @@ ggpairs(subscriptores.red[columnas.num], aes(color=subscriptores.red$Outlier),
 subscriptores.out <- subscriptores.red[subscriptores.red$Outlier == TRUE,] 
 subscriptores.dep <- subscriptores.red[subscriptores.red$Outlier == FALSE,] 
 
-
 # Dividimos en el dataset depurado (sin outliers) en 2 datasets, uno de test y otro de pruebas
 # Para cada registro generamos un numero aleatorio basado en una distribucion uniforme y lo 
 # guardamos como una nueva columna en el dataset.
@@ -232,5 +231,4 @@ subscriptores.dep$Test_Split <- runif(dim(subscriptores.dep)[1])
 # a training
 subscriptores.test <- subscriptores.dep[subscriptores.dep$Test_Split <= 0.1,]
 subscriptores.training <- subscriptores.dep[subscriptores.dep$Test_Split > 0.1,]
-
 
