@@ -10,11 +10,8 @@ Entrenamiento <- function(DFTrain, DFTags, ConfLev, MinNum){
   return(modelo)
 }
 
-
-
-
 ####
-# Agrupar variables para simplificar (PENDIENTE)
+# TRATAMIENTO DE VARIABLES (PENDIENTE)
 
 
 # OPCION A : DATA SET COMPLETO
