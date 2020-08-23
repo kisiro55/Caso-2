@@ -26,15 +26,15 @@ str(subscriptores.raw)
 # subscriptores.raw <- mutate(subscriptores.raw, Area_Code = as.factor(Area_Code))
 
 
-########HK: Convierto las 4 categoricas en Factor (estaba en el HTML, pero no lo encontre en el cod R) ##########
+#####HK Duda:Convierto las 4 categoricas en Factor (estaba en el HTML, pero no lo encontre en el cod R) ####
 
-names <- c('State' ,'Area_Code','Intl_Plan','Vmail_Plan','Churn')
+names <- c('State','Phone', 'Area_Code','Intl_Plan','Vmail_Plan','Churn')
 subscriptores.raw[,names] <- lapply(subscriptores.raw[,names] , factor)
 str(subscriptores.raw)
 
-########HK Duda:convendria que cust serv sea categorica para algun modelo? (es similar a la discusion de #rooms. depende del modelo a utilizar?) ##########
-# subscriptores.raw <- mutate(subscriptores.raw, CustServ_Calls = as.factor(CustServ_Calls))
+####HK Duda:convendria que cust serv sea categorica para algun modelo? (es similar a la discusion de #rooms. depende del modelo a utilizar?)####
 
+# subscriptores.raw <- mutate(subscriptores.raw, CustServ_Calls = as.factor(CustServ_Calls))
 # Exploracion inicial del dataset y verificacion de valores faltantes (missings)
 # No se observan valores faltantes
 summary(subscriptores.raw)
@@ -162,8 +162,10 @@ corrplot(cor(subscriptores.raw[columnas.num]),
 # seleccionadas para eliminacion son las correspondientes a los cargos: Day_Charge, Eve_Charge, 
 # Night_Charge, Intl_Charge.
 # Creamos un nuevo dataset reducido en 4 columas: subscriptores.red
-subscriptores.red <- subscriptores.raw[, !colnames(subscriptores.raw) %in% c("Day_Charge", 
-                                                                             "Eve_Charge", "Night_Charge", "Intl_Charge")]
+subscriptores.red <- subscriptores.raw[, !colnames(subscriptores.raw) %in% c("Day_Charge", "Eve_Charge", "Night_Charge", "Intl_Charge")]
+
+#### 1.Genero el Dataset1 (DS1):Base total sin Charges que estaban correlacionadas con los minutos #######
+write.csv(subscriptores.red,'DS1.csv')
 
 # Tras eliminar las 4 varaibles cuantitativas edefinimos el vector con los indices de las 
 # variables cuantitativas
@@ -220,6 +222,9 @@ ggpairs(subscriptores.red[columnas.num], aes(color=subscriptores.red$Outlier),
 subscriptores.out <- subscriptores.red[subscriptores.red$Outlier == TRUE,] 
 subscriptores.dep <- subscriptores.red[subscriptores.red$Outlier == FALSE,] 
 
+#### 2.Genero el Dataset2 (DS2):Idem DS1, quitandole outliers por mahalanobis #######
+write.csv(subscriptores.dep,'DS2.csv')
+
 # Dividimos en el dataset depurado (sin outliers) en 2 datasets, uno de test y otro de pruebas
 # Para cada registro generamos un numero aleatorio basado en una distribucion uniforme y lo 
 # guardamos como una nueva columna en el dataset.
@@ -235,15 +240,7 @@ subscriptores.training <- subscriptores.dep[subscriptores.dep$Test_Split > 0.1,]
 View(subscriptores.test)
 dim(subscriptores.training)
 
-##########################################################
-## EXPORTACION DE CSV (idealmente ya limpios para modelar)
-##########################################################
 
-# Lo exporto para trabajarlo en otro file y separar la fase de preparacion con la de modelaje.
-write.csv(subscriptores.test,'subscr_test_v1.csv')
-write.csv(subscriptores.training,'subscr_training_v1.csv')
-
-# Chequear que al importarlo hay que eliminar la primer columna de codigo
 
 
 

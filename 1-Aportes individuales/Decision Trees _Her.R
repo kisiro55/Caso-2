@@ -1,156 +1,227 @@
+# install.packages(c('caret', 'skimr', 'RANN', 'randomForest', 'fastAdaboost', 'gbm', 'xgboost', 'caretEnsemble', 'C50', 'earth'))
+
 library (C50)
 library(foreign)
 library(caret)
 
+## https://www.machinelearningplus.com/machine-learning/caret-package/ ##
 ## LEO LOS DATOS DE LA FASE DE PREPROCESAMIENTO
 
-subscriptores.test.input <- read.csv('subscr_test_v1.csv', stringsAsFactors=TRUE) # subscr_test_v1.csv
-subscriptores.training.input <- read.csv('subscr_training_v1.csv', stringsAsFactors=TRUE) #subscr_training_v1.csv'
+DS1 <- read.csv('DS1.csv', stringsAsFactors=TRUE) # subscr_test_v1.csv
+DS2 <- read.csv('DS2.csv', stringsAsFactors=TRUE) #subscr_training_v1.csv'
 
 # Elimino la primer columna de id.
-subscriptores.test.input <- subscriptores.test.input[-c(1)]
-subscriptores.training.input <- subscriptores.training.input[-c(1)]
 
-# chequeo el DF
-dim(subscriptores.test.input)
-dim(subscriptores.training.input)
+DS1 <- DS1[-c(1,5)]
+DS2 <- DS2[-c(1,5,19,20)]
 
-str(subscriptores.test.input)
-## FUNCION PARA ENTRENAMIENTO
+#### 3 Data Preparation and Preprocessing ####
+#### 3.1 -  How to split the dataset into training and validation? ####
 
-Entrenamiento <- function(DFTrain, DFTags, ConfLev, MinNum){
-        modelo <- C5.0(DFTrain,DFTags, control = C5.0Control(CF = ConfLev,
-                                                             minCases = MinNum))
-        return(modelo)
-}
+# Create the training and test datasets
+set.seed(100)
 
-####
-# TRATAMIENTO DE VARIABLES (PENDIENTE)
+# Step 1: Get row numbers for the training data
+trainRowNumbers <- createDataPartition(DS1$Churn, p=0.8, list=FALSE)
 
+# Step 2: Create the training  dataset
+trainData <- DS1[trainRowNumbers,]
 
-# OPCION A : DATA SET COMPLETO
+# Step 3: Create the test dataset
+testData <- DS1[-trainRowNumbers,]
+dim(trainData)
 
-# OPCION B : PUEDE SER GENERAR UNA VARIABLE ADICIONAL CATEGORICA QUE VINCULE LA CANTIDAD DE LLAMADAS CON LOS MINUTOS HABLADOS PARA
-# CATEGORIZAR TIPO DE CLIENTES
+# Store X and Y for later use.
+x = trainData[, 1:16]
+y = trainData$Churn
 
-# OPCION C : AGRUPAR VARIABLES CUALI EN CUANTI CADA UNA POR SEPARADO.
+#### 3.2. Descriptive statistics ####
+library(skimr)
+skimmed <- skim_to_wide(trainData)
+skimmed[, c(1:15)]
+#### Nota: probar pasar Area_Code a Factor? Entender la logica del areacode vs. States ####
+#### 3.3. How to impute missing values using preProcess()? ####
 
-################################################
-#                                              #
-# ESTANDARIZACION DE VARIABLES NUMERICAS       #
-#                                              #
-################################################
+# En este caso no hay missing pero de haber habido se podria haber ejecutado el siguiente codigo: 
 
-## TRAINING
-# Estandarizo el training
-idx <- which(sapply(subscriptores.training[,1:17], class) %in% c("numeric","integer"))
-Sub_Train_EST1 <- scale(subscriptores.training[,idx])
-Sub_Train_EST1 <- cbind(Sub_Train_EST1,subscriptores.training[,-idx] ) 
+# Create the knn imputation model on the training data
+# preProcess_missingdata_model <- preProcess(trainData, method='knnImpute')
+# preProcess_missingdata_model
 
-#Elimino variable Phone (por ser simil a un ID)
-Sub_Train_EST1 <- Sub_Train_EST1[,-14]
+# Use the imputation model to predict the values of missing data points
+# library(RANN)  # required for knnInpute
+# trainData <- predict(preProcess_missingdata_model, newdata = trainData)
+# anyNA(trainData)
 
-## TEST
-#Estandarizar Test
-idx <- which(sapply(subscriptores.test[,1:16], class) %in% c("numeric","integer"))
-Sub_Test_EST1 <- scale(subscriptores.test[,idx])
-Sub_Test_EST1 <- cbind(Sub_Test_EST1,subscriptores.test[,-idx] ) 
+#### 3.4. How to create One-Hot Encoding (dummy variables)? ####
 
-#Elimino variable Phone(por ser simil a un ID)
-Sub_Test_EST1 <- Sub_Test_EST1[,-14]
+str(trainData)
+# DudaHK: vale la pena hacer one hot encoding del State? Son 51 levels!!
 
+# One-Hot Encoding
+# Creating dummy variables is converting a categorical variable to as many binary variables as here are categories.
 
-# Chequea igual cant de columnas
-dim(Sub_Test_EST1)[2] - dim(Sub_Train_EST1)[2]
+dummies_model <- dummyVars(Churn ~ ., data=trainData[-c(1)], fullRank=T) # fullRank=T evita colinealidad tomando n-1 columnas para representar las n variables.
 
-# Para la realizacion del primer modelo se va proceder a utilizar TODAS las variables 
-Modelo1 <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, 0.25, 2)
+#Idem pero con dummies de State
+# dummies_model <- dummyVars(Churn ~ ., data=trainData, fullRank=T)
 
-summary(Modelo1)
+# Create the dummy variables using predict. The Y variable (Purchase) will not be present in trainData_mat.
+trainData_mat <- predict(dummies_model, newdata = trainData)
 
-plot(Modelo1)
-# Se procede a probar con el subset de Test
-p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
+# # Convert to dataframe
+trainData1 <- data.frame(trainData_mat)
 
-summary(p1)
+# Append the Y variable
+trainData1$State <- trainData[c(1)]
+trainData1$Churn <- y
 
-### No me funciono el plot y probe la formula directa. funciona el plot (es horrible) pero le tengo que agregar todavia los parametros --> chequear
-tree_mod <- C5.0(x = Sub_Train_EST1[,1:15], y = Sub_Train_EST1$Churn)
+# # See the structure of the new dataset
+str(trainData1)
+dim(trainData1)
 
-summary(tree_mod)
-plot(tree_mod)
+# Probar este codigo para aplicar one hot encoding solo a algunas columnas
+        # factor_columns <- names(which(lapply(train, class) == "factor"))
+        # factor_predictors <- setdiff(factor_columns, c("sold", "UniqueID"))
+        # dummies_formula <- as.formula(paste("~ ", paste0(factor_predictors, collapse=" + ")))
+        # dummies <- dummyVars(dummies_formula, data=train, fullRank=TRUE)
+        # train_dummies <- as.data.frame(predict(dummies, newdata=train))
 
-################################################
-#
-#       FUNCION PARA ENCONTRAR MODELO OPTIMO
-#
-#################################################
+#### DudaHK: Es recomendado el one-hot-encoding para decision trees por ejemplo? Se suele hacer encoding ya que se probara con diferentes modelos y en gral requieren este preprocesamiento? Probar con y sin one-hot para ver diferencias en la practica ####
 
-# LA IDEA ES ITERAR MODIFICANDO EL CONF LEVEL Y EL MIN CASES, COLOCAR EN UNA TABLA LA INFORMACION Y MOSTRAR GRAFICAS
-# PARA DETERMINAR EL ARBOL IDEAL
+#### 3.5. How to preprocess to transform the data? #### 
+# With the missing values handled and the factors one-hot-encoded, our training dataset is now ready to undergo variable transformations if required.
+# So what type of preprocessing are available in caret?
+# range: Normalize values so it ranges between 0 and 1
+# center: Subtract Mean
+# scale: Divide by standard deviation
+# BoxCox: Remove skewness leading to normality. Values must be > 0
+# YeoJohnson: Like BoxCox, but works for negative values.
+# expoTrans: Exponential transformation, works for negative values.
+# pca: Replace with principal components
+# ica: Replace with independent components
+# spatialSign: Project the data to a unit circle
+#### Try: Probar haciendo feature scaling ####
+        # preProcess_range_model <- preProcess(trainData, method= c("scale"))
+        # 
+        # ####DudaHK: dec trees precisa range o scale? me parece que no es sensible. lo podemos probar ####
+        # trainData <- predict(preProcess_range_model, newdata = trainData)
+        # 
+        # # Append the Y variable
+        # trainData$Churn <- y
+        # apply(trainData[, 1:15], 2, FUN=function(x){c('min'=min(x), 'max'=max(x))})
 
-# Itero de 1 a 5 Min cases, para cada iteracion se guardara
-# TAMAÑO DEL ARBOL
-# ACCURACY
-# RECALL
-# CF
-# MIN NUM
+#### '=================' ####
+#### 4. How to visualize the importance of variables using featurePlot() ####
+# columnas.num <- which(sapply(trainData1, class) %in% c("numeric","integer"))
+# columnas.num
+# trainData2 <-trainData1[columnas.num]
+str(trainData1$State)
+summary(trainData1$State)
+dim(trainData1$State)
+### ! Descomentar ####
+        # featurePlot(x = trainData1[, 1:14], 
+        #             y = trainData1$Churn,
+        #             plot = "box",
+        #             strip=strip.custom(par.strip.text=list(cex=.7)),
+        #             scales = list(x = list(relation="free"), 
+        #                           y = list(relation="free")))
+        # 
+        # 
+        # 
+        # featurePlot(x = trainData1[, 1:14], 
+        #             y = trainData1$Churn, 
+        #             plot = "density",
+        #             strip=strip.custom(par.strip.text=list(cex=.7)),
+        #             scales = list(x = list(relation="free"), 
+        #                           y = list(relation="free")))
 
-# Se crean los Niveles de Confianza para iterar
-ConfBase <- seq(0.05, 0.9, by = 0.05)
-Resultados <- 0
+#### Conclusion: Se observa la importancia de CustServ_Calls, Day_mins y Intl_plan en la variable a predecir Churn. So to be safe, let’s not arrive at conclusions about excluding variables prematurely.####
+#### '=================' ####
+#### 5. How to do feature selection using recursive feature elimination (rfe)? ####
 
-## EL NOMBRE DE LA COLUMNA ES LA QUE VA A MOSTRAR DE LA MATR CONF
+        # set.seed(100)
+        # options(warn=-1)
+        # 
+        # subsets <- c(1:4)
+        # 
+        # ctrl <- rfeControl(functions = rfFuncs,
+        #                    method = "repeatedcv",
+        #                    repeats = 5,
+        #                    verbose = FALSE)
+        # 
+        # lmProfile <- rfe(x=trainData1[, 1:14], y=trainData$Churn,
+        #                  sizes = subsets,
+        #                  rfeControl = ctrl)
+        # 
+        # lmProfile
 
-ModeloITE<- list()
+#### '=================' ####
+#### 6. Training and Tuning the model ####
+#### 6.1. How to train() the model and interpret the results? ####
 
-######
-# ITERACION CON 1ER DATA SET (VIENE DIRECTO DEL SCRIPT DE JUAN), EN EL PASO ANTERIOR HABRIA QUE ARMAR 2 DS MAS CON CONDICIONES DIFERENTES
-#
+# See available algorithms in caret
+modelnames <- paste(names(getModelInfo()), collapse=',  ')
+modelnames
+modelLookup('C5.0')
 
-pos <- 0
+# Set the seed for reproducibility
+set.seed(100)
 
-for (i in 1:10){
-        for (j in 1:length(ConfBase)) {
-                Conf  <- ConfBase[j]
-                ModeloITE <-  Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, Conf,i )  #GENERAR MODELO
-                PredITE <- predict(ModeloITE, Sub_Test_EST1[1:15])
-                matrizConf <- confusionMatrix(data = PredITE, reference = Sub_Test_EST1$Churn, positive = "True.")
-                
-                Datos <- c(ModeloITE$control$CF,ModeloITE$control$minCases,
-                           ModeloITE$size,matrizConf$byClass)                                                      
-                Resultados <- rbind(Resultados,Datos)   
-                pos <- pos + 1
-        }
-}
-Resultados <- Resultados[-c(1),] #ELIMINO PRIMERA FILA QUE POR EL RBIND SE COLOCO
+# Train the model using Dec Tree and predict on the training data itself.
+model_C5 = train(Churn ~ ., data=trainData1[-c(15)], method='C5.0')
+fitted <- predict(model_C5)
+model_C5
+plot(model_C5, main="Model Accuracies with C5.0")
 
-head(Resultados)
+#### 6.2 How to compute variable importance? ####
+varimp_C5 <- varImp(model_C5)
+plot(varimp_C5, main="Variable Importance with C5.0")
 
+#### 6.3. Prepare the test dataset and predict ####
+# Step 1: Impute missing values 
+# testData2 <- predict(preProcess_missingdata_model, testData)  
 
-## SE DEBERIA ELEGIR EL QUE MEJOR ELIJA A LOS POSIBLES CHURN
+# Step 2: Create one-hot encodings (dummy variables)
+testData2 <- predict(dummies_model, testData)
 
+# Step 3: Transform the features to range between 0 and 1
+# testData3 <- predict(preProcess_range_model, testData2)
 
-## HACER UN SCORING
+# View
+head(testData2[, 1:10])
 
+#### 6.4. Predict on testData ####
+# Predict on testData
+predicted <- predict(model_C5, testData2)
+head(predicted)
 
+#### 6.5. Confusion Matrix ####
+# Compute the confusion matrix
+confusionMatrix(reference = testData$Churn, data = predicted, mode='everything', positive='True.')
 
+#### 7. How to do hyperparameter tuning to optimize the model for better performance? ####
 
-################################################
-#
-#                       AUX
-#
-#################################################
+#### 7.1. Setting up the trainControl() ####
 
-# Para la realizacion del primer modelo se va proceder a utilizar TODAS las variables 
-Modelo1 <- Entrenamiento(Sub_Train_EST1[1:15],Sub_Train_EST1$Churn, 0.25,2 )
+# Define the training control
+fitControl <- trainControl(
+        method = 'cv',                   # k-fold cross validation
+        number = 5,                      # number of folds
+        savePredictions = 'final',       # saves predictions for optimal tuning parameter
+        classProbs = T,                  # should class probabilities be returned
+        summaryFunction=twoClassSummary  # results summary function
+) 
 
-Modelo1$control$CF
+#### 7.2 Hyper Parameter Tuning using tuneLength ####
 
-summary(Modelo1)
+# Step 1: Tune hyper parameters by setting tuneLength
+set.seed(100)
+model_C5_2 = train(Churn ~ ., data=trainData1, method='C5.0', tuneLength = 5, metric='ROC', trControl = fitControl)
+model_C5_2
 
-# Se procede a probar con el subset de Test
-p1 <- predict(Modelo1, Sub_Test_EST1[1:15])
-matriz <- confusionMatrix(data = p1, reference = Sub_Test_EST1$Churn, positive = "True.")
-summary(p1)
+# Step 2: Predict on testData and Compute the confusion matrix
+predicted2 <- predict(model_C5_2, testData2)
+confusionMatrix(reference = testData$Churn, data = predicted2, mode='everything', positive='True.')
+
 
