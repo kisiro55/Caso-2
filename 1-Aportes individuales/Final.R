@@ -101,7 +101,7 @@ ctrl <- trainControl(method="cv",
                      classProbs=T,
                      savePredictions = T)
 
-## Training different models
+####  ENTRENO MODELOS ####
 
 model_C5 = train(Churn ~ ., data=downSampledTrain, method='C5.0', trControl=ctrl)
 fitted <- predict(model_C5)
@@ -131,6 +131,9 @@ model_CART <- rpart(
         data = downSampledTrain, 
         method = "class"
 )
+
+####  PREDICCION ####
+
 # model_CART = rpart(Churn ~ ., data=downSampledTrain, method='rpart', trControl=ctrl)
 fitted <- predict(model_CART)
 model_CART
@@ -151,7 +154,8 @@ head(predicted_CART)
 predicted_RF <- predict(model_RF, testData[,1:17])
 head(predicted_RF)
 
-#### 6.5. Confusion Matrix ####
+####  CONF MATRIX ####
+
 # Compute the confusion matrix
 confusionMatrix(reference = testData$Churn, data = predicted_C5, mode='everything', positive='True.')
 
