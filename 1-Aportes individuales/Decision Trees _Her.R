@@ -15,6 +15,24 @@ DS2 <- read.csv('DS2.csv', stringsAsFactors=TRUE) #subscr_training_v1.csv'
 DS1 <- DS1[-c(1,5)]
 DS2 <- DS2[-c(1,5,19,20)]
 
+
+## Agrego Variable Ambos Planes
+DS1$Ambos_planes <- ifelse(as.character(DS1$Intl_Plan) == as.character(DS1$Vmail_Plan), "TRUE", "FALSE")
+DS1$Ambos_planes <- as.factor(DS1$Ambos_planes)
+## Agrego Variable "Mas de 3 Llamadas"
+DS1$CustServ_Calls <- as.factor(DS1$CustServ_Calls)
+levels(DS1$CustServ_Calls)
+normales <- c("0", "1", "2", "3")                    
+quejosos <- c( "4", "5", "6","7", "8", "9")
+
+DS1$Customer_service <- ifelse(DS1$CustServ_Calls %in% normales, "<4", ">=4")
+DS1$Customer_service <- as.factor(DS1$Customer_service)
+
+table(DS1$Customer_service)
+
+# Reordeno columnas del dataset para que Churn quede al final
+DS1 <- subset(DS1, select=c(State:CustServ_Calls,Customer_service,Ambos_planes,Churn))
+
 #### 3 Data Preparation and Preprocessing ####
 #### 3.1 -  How to split the dataset into training and validation? ####
 
@@ -32,7 +50,7 @@ testData <- DS1[-trainRowNumbers,]
 dim(trainData)
 
 # Store X and Y for later use.
-x = trainData[, 1:16]
+x = trainData[, 1:17]
 y = trainData$Churn
 
 #### 3.2. Descriptive statistics ####

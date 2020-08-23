@@ -58,121 +58,6 @@ library(skimr)
 skimmed <- skim_to_wide(trainData)
 skimmed[, c(1:15)]
 #### Nota: probar pasar Area_Code a Factor? Entender la logica del areacode vs. States ####
-#### 3.3. How to impute missing values using preProcess()? ####
-
-# En este caso no hay missing pero de haber habido se podria haber ejecutado el siguiente codigo: 
-
-# Create the knn imputation model on the training data
-# preProcess_missingdata_model <- preProcess(trainData, method='knnImpute')
-# preProcess_missingdata_model
-
-# Use the imputation model to predict the values of missing data points
-# library(RANN)  # required for knnInpute
-# trainData <- predict(preProcess_missingdata_model, newdata = trainData)
-# anyNA(trainData)
-
-#### 3.4. How to create One-Hot Encoding (dummy variables)? ####
-
-str(trainData)
-# DudaHK: vale la pena hacer one hot encoding del State? Son 51 levels!!
-
-# One-Hot Encoding
-# Creating dummy variables is converting a categorical variable to as many binary variables as here are categories.
-
-dummies_model <- dummyVars(Churn ~ ., data=trainData[-c(1)], fullRank=T) # fullRank=T evita colinealidad tomando n-1 columnas para representar las n variables.
-
-#Idem pero con dummies de State
-# dummies_model <- dummyVars(Churn ~ ., data=trainData, fullRank=T)
-
-# Create the dummy variables using predict. The Y variable (Purchase) will not be present in trainData_mat.
-trainData_mat <- predict(dummies_model, newdata = trainData)
-
-# # Convert to dataframe
-trainData1 <- data.frame(trainData_mat)
-
-# Append the Y variable
-trainData1$State <- trainData[c(1)]
-trainData1$Churn <- y
-
-# # See the structure of the new dataset
-str(trainData1)
-dim(trainData1)
-
-# Probar este codigo para aplicar one hot encoding solo a algunas columnas
-# factor_columns <- names(which(lapply(train, class) == "factor"))
-# factor_predictors <- setdiff(factor_columns, c("sold", "UniqueID"))
-# dummies_formula <- as.formula(paste("~ ", paste0(factor_predictors, collapse=" + ")))
-# dummies <- dummyVars(dummies_formula, data=train, fullRank=TRUE)
-# train_dummies <- as.data.frame(predict(dummies, newdata=train))
-
-#### DudaHK: Es recomendado el one-hot-encoding para decision trees por ejemplo? Se suele hacer encoding ya que se probara con diferentes modelos y en gral requieren este preprocesamiento? Probar con y sin one-hot para ver diferencias en la practica ####
-
-#### 3.5. How to preprocess to transform the data? #### 
-# With the missing values handled and the factors one-hot-encoded, our training dataset is now ready to undergo variable transformations if required.
-# So what type of preprocessing are available in caret?
-# range: Normalize values so it ranges between 0 and 1
-# center: Subtract Mean
-# scale: Divide by standard deviation
-# BoxCox: Remove skewness leading to normality. Values must be > 0
-# YeoJohnson: Like BoxCox, but works for negative values.
-# expoTrans: Exponential transformation, works for negative values.
-# pca: Replace with principal components
-# ica: Replace with independent components
-# spatialSign: Project the data to a unit circle
-#### Try: Probar haciendo feature scaling ####
-# preProcess_range_model <- preProcess(trainData, method= c("scale"))
-# 
-# ####DudaHK: dec trees precisa range o scale? me parece que no es sensible. lo podemos probar ####
-# trainData <- predict(preProcess_range_model, newdata = trainData)
-# 
-# # Append the Y variable
-# trainData$Churn <- y
-# apply(trainData[, 1:15], 2, FUN=function(x){c('min'=min(x), 'max'=max(x))})
-
-#### '=================' ####
-#### 4. How to visualize the importance of variables using featurePlot() ####
-# columnas.num <- which(sapply(trainData1, class) %in% c("numeric","integer"))
-# columnas.num
-# trainData2 <-trainData1[columnas.num]
-str(trainData1$State)
-summary(trainData1$State)
-dim(trainData1$State)
-### ! Descomentar ####
-# featurePlot(x = trainData1[, 1:14], 
-#             y = trainData1$Churn,
-#             plot = "box",
-#             strip=strip.custom(par.strip.text=list(cex=.7)),
-#             scales = list(x = list(relation="free"), 
-#                           y = list(relation="free")))
-# 
-# 
-# 
-# featurePlot(x = trainData1[, 1:14], 
-#             y = trainData1$Churn, 
-#             plot = "density",
-#             strip=strip.custom(par.strip.text=list(cex=.7)),
-#             scales = list(x = list(relation="free"), 
-#                           y = list(relation="free")))
-
-#### Conclusion: Se observa la importancia de CustServ_Calls, Day_mins y Intl_plan en la variable a predecir Churn. So to be safe, let’s not arrive at conclusions about excluding variables prematurely.####
-#### '=================' ####
-#### 5. How to do feature selection using recursive feature elimination (rfe)? ####
-
-# set.seed(100)
-# options(warn=-1)
-# 
-# subsets <- c(1:4)
-# 
-# ctrl <- rfeControl(functions = rfFuncs,
-#                    method = "repeatedcv",
-#                    repeats = 5,
-#                    verbose = FALSE)
-# 
-# lmProfile <- rfe(x=trainData1[, 1:14], y=trainData$Churn,
-#                  sizes = subsets,
-#                  rfeControl = ctrl)
-# 
-# lmProfile
 
 #### '=================' ####
 #### 6. Training and Tuning the model ####
@@ -187,10 +72,23 @@ modelLookup('C5.0')
 set.seed(100)
 
 # Train the model using Dec Tree and predict on the training data itself.
-model_C5 = train(Churn ~ ., data=trainData1[-c(15)], method='C5.0')
+
+ctrl <- trainControl(method="cv", 
+                     summaryFunction=twoClassSummary, 
+                     classProbs=T,
+                     savePredictions = T)
+
+# rfFit <- train(Class ~ ., data=Sonar, 
+#                method="rf", preProc=c("center", "scale"), 
+#                trControl=ctrl)
+
+
+model_C5 = train(Churn ~ ., data=trainData, method='C5.0', trControl=ctrl)
 fitted <- predict(model_C5)
 model_C5
+
 plot(model_C5, main="Model Accuracies with C5.0")
+
 
 #### 6.2 How to compute variable importance? ####
 varimp_C5 <- varImp(model_C5)
@@ -201,22 +99,46 @@ plot(varimp_C5, main="Variable Importance with C5.0")
 # testData2 <- predict(preProcess_missingdata_model, testData)  
 
 # Step 2: Create one-hot encodings (dummy variables)
-testData2 <- predict(dummies_model, testData)
+# testData2 <- predict(dummies_model, testData)
 
 # Step 3: Transform the features to range between 0 and 1
 # testData3 <- predict(preProcess_range_model, testData2)
 
 # View
-head(testData2[, 1:10])
+head(testData[, 1:17])
 
 #### 6.4. Predict on testData ####
 # Predict on testData
-predicted <- predict(model_C5, testData2)
+predicted <- predict(model_C5, testData[,1:17])
 head(predicted)
 
 #### 6.5. Confusion Matrix ####
 # Compute the confusion matrix
 confusionMatrix(reference = testData$Churn, data = predicted, mode='everything', positive='True.')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Visualize ROC Curves ####
+
+library(ROCR)
+library(pROC)
+# Select a parameter setting
+selectedIndices <- rfFit$pred$True. == 2
+# Plot:
+plot.roc(model_C5$pred$obs[selectedIndices],
+         model_C5$pred$M[selectedIndices])
+
 
 #### 7. How to do hyperparameter tuning to optimize the model for better performance? ####
 
@@ -235,11 +157,58 @@ fitControl <- trainControl(
 
 # Step 1: Tune hyper parameters by setting tuneLength
 set.seed(100)
-model_C5_2 = train(Churn ~ ., data=trainData1, method='C5.0', tuneLength = 5, metric='ROC', trControl = fitControl)
+# 
+# ctrl <- trainControl(method = "repeatedcv", repeats = 3, number = 10, classProbs = TRUE, summaryFunction = twoClassSummary)
+# grid <- expand.grid(mtry = c(3,4,5))
+# 
+# model <- train(Churn ~ ., data = trainData, method = "C5.0", tuneGrid = grid, trControl = ctrl, metric="Sens")
+
+
+model_C5_2 = train(Churn ~ ., data=trainData, method='C5.0', tuneLength = 5, metric='ROC', trControl = fitControl)
 model_C5_2
 
 # Step 2: Predict on testData and Compute the confusion matrix
-predicted2 <- predict(model_C5_2, testData2)
+predicted2 <- predict(model_C5_2, testData[,1:17])
 confusionMatrix(reference = testData$Churn, data = predicted2, mode='everything', positive='True.')
 
 
+#### 7.3. Hyper Parameter Tuning using tuneGrid ####
+
+# Step 1: Define the tuneGrid
+ConfBase <- seq(0.05, 0.9, by = 0.05)
+
+
+C50Grid <- expand.grid(trials = c(1:9, (1:10)*10),
+                       model = c("tree", "rules"),
+                       winnow = c(TRUE, FALSE))
+
+# Step 2: Tune hyper parameters by setting tuneGrid
+set.seed(476)
+# c50TuneBaseline <- train(x = trainData[1:17],
+#                          y = trainData$Churn,
+#                          method = 'C5.0',
+#                          tuneGrid = c50Grid,
+#                          verbose = FALSE,
+#                          metric = ROC,
+#                          trControl = ctrl)
+# c50TuneBaseline
+
+model_C5_3 = train(Churn ~ ., data=trainData, method='C5.0', metric='Sens', tuneGrid = C50Grid, trControl = fitControl)
+model_C5_3
+
+# Step 3: Predict on testData and Compute the confusion matrix
+predicted3 <- predict(model_C5_3, testData[,1:17])
+confusionMatrix(reference = testData$Churn, data = predicted3, mode='everything', positive='True.')
+
+
+library(pROC)
+# create object ValPredProb by predicting validation set
+# postive class (gt50) probabilities using C50TrainSens
+C50ROC <- pROC::roc(testData$Churn,
+                    0.14,
+                    levels = rev(levels(testData$Churn)))
+#
+# determine the new cutoff to be used on the test set
+C50Thresh <- pROC::coords(C50ROC, x = best, best.method = closest.topleft)
+newPredictions <- factor(ifelse(testPred > C50Thresh[1],
+                                gt50, le50))
