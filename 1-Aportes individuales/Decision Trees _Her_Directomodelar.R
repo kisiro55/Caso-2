@@ -15,6 +15,24 @@ DS2 <- read.csv('DS2.csv', stringsAsFactors=TRUE) #subscr_training_v1.csv'
 DS1 <- DS1[-c(1,5)]
 DS2 <- DS2[-c(1,5,19,20)]
 
+
+## Agrego Variable Ambos Planes
+DS1$Ambos_planes <- ifelse(as.character(DS1$Intl_Plan) == as.character(DS1$Vmail_Plan), "TRUE", "FALSE")
+DS1$Ambos_planes <- as.factor(DS1$Ambos_planes)
+## Agrego Variable "Mas de 3 Llamadas"
+DS1$CustServ_Calls <- as.factor(DS1$CustServ_Calls)
+levels(DS1$CustServ_Calls)
+normales <- c("0", "1", "2", "3")                    
+quejosos <- c( "4", "5", "6","7", "8", "9")
+
+DS1$Customer_service <- ifelse(DS1$CustServ_Calls %in% normales, "<4", ">=4")
+DS1$Customer_service <- as.factor(DS1$Customer_service)
+
+table(DS1$Customer_service)
+
+# Reordeno columnas del dataset para que Churn quede al final
+DS1 <- subset(DS1, select=c(State:CustServ_Calls,Customer_service,Ambos_planes,Churn))
+
 #### 3 Data Preparation and Preprocessing ####
 #### 3.1 -  How to split the dataset into training and validation? ####
 
@@ -32,7 +50,7 @@ testData <- DS1[-trainRowNumbers,]
 dim(trainData)
 
 # Store X and Y for later use.
-x = trainData[, 1:16]
+x = trainData[, 1:17]
 y = trainData$Churn
 
 #### 3.2. Descriptive statistics ####
@@ -81,11 +99,11 @@ str(trainData1)
 dim(trainData1)
 
 # Probar este codigo para aplicar one hot encoding solo a algunas columnas
-        # factor_columns <- names(which(lapply(train, class) == "factor"))
-        # factor_predictors <- setdiff(factor_columns, c("sold", "UniqueID"))
-        # dummies_formula <- as.formula(paste("~ ", paste0(factor_predictors, collapse=" + ")))
-        # dummies <- dummyVars(dummies_formula, data=train, fullRank=TRUE)
-        # train_dummies <- as.data.frame(predict(dummies, newdata=train))
+# factor_columns <- names(which(lapply(train, class) == "factor"))
+# factor_predictors <- setdiff(factor_columns, c("sold", "UniqueID"))
+# dummies_formula <- as.formula(paste("~ ", paste0(factor_predictors, collapse=" + ")))
+# dummies <- dummyVars(dummies_formula, data=train, fullRank=TRUE)
+# train_dummies <- as.data.frame(predict(dummies, newdata=train))
 
 #### DudaHK: Es recomendado el one-hot-encoding para decision trees por ejemplo? Se suele hacer encoding ya que se probara con diferentes modelos y en gral requieren este preprocesamiento? Probar con y sin one-hot para ver diferencias en la practica ####
 
@@ -102,14 +120,14 @@ dim(trainData1)
 # ica: Replace with independent components
 # spatialSign: Project the data to a unit circle
 #### Try: Probar haciendo feature scaling ####
-        # preProcess_range_model <- preProcess(trainData, method= c("scale"))
-        # 
-        # ####DudaHK: dec trees precisa range o scale? me parece que no es sensible. lo podemos probar ####
-        # trainData <- predict(preProcess_range_model, newdata = trainData)
-        # 
-        # # Append the Y variable
-        # trainData$Churn <- y
-        # apply(trainData[, 1:15], 2, FUN=function(x){c('min'=min(x), 'max'=max(x))})
+# preProcess_range_model <- preProcess(trainData, method= c("scale"))
+# 
+# ####DudaHK: dec trees precisa range o scale? me parece que no es sensible. lo podemos probar ####
+# trainData <- predict(preProcess_range_model, newdata = trainData)
+# 
+# # Append the Y variable
+# trainData$Churn <- y
+# apply(trainData[, 1:15], 2, FUN=function(x){c('min'=min(x), 'max'=max(x))})
 
 #### '=================' ####
 #### 4. How to visualize the importance of variables using featurePlot() ####
@@ -120,41 +138,41 @@ str(trainData1$State)
 summary(trainData1$State)
 dim(trainData1$State)
 ### ! Descomentar ####
-        # featurePlot(x = trainData1[, 1:14], 
-        #             y = trainData1$Churn,
-        #             plot = "box",
-        #             strip=strip.custom(par.strip.text=list(cex=.7)),
-        #             scales = list(x = list(relation="free"), 
-        #                           y = list(relation="free")))
-        # 
-        # 
-        # 
-        # featurePlot(x = trainData1[, 1:14], 
-        #             y = trainData1$Churn, 
-        #             plot = "density",
-        #             strip=strip.custom(par.strip.text=list(cex=.7)),
-        #             scales = list(x = list(relation="free"), 
-        #                           y = list(relation="free")))
+# featurePlot(x = trainData1[, 1:14], 
+#             y = trainData1$Churn,
+#             plot = "box",
+#             strip=strip.custom(par.strip.text=list(cex=.7)),
+#             scales = list(x = list(relation="free"), 
+#                           y = list(relation="free")))
+# 
+# 
+# 
+# featurePlot(x = trainData1[, 1:14], 
+#             y = trainData1$Churn, 
+#             plot = "density",
+#             strip=strip.custom(par.strip.text=list(cex=.7)),
+#             scales = list(x = list(relation="free"), 
+#                           y = list(relation="free")))
 
 #### Conclusion: Se observa la importancia de CustServ_Calls, Day_mins y Intl_plan en la variable a predecir Churn. So to be safe, let’s not arrive at conclusions about excluding variables prematurely.####
 #### '=================' ####
 #### 5. How to do feature selection using recursive feature elimination (rfe)? ####
 
-        # set.seed(100)
-        # options(warn=-1)
-        # 
-        # subsets <- c(1:4)
-        # 
-        # ctrl <- rfeControl(functions = rfFuncs,
-        #                    method = "repeatedcv",
-        #                    repeats = 5,
-        #                    verbose = FALSE)
-        # 
-        # lmProfile <- rfe(x=trainData1[, 1:14], y=trainData$Churn,
-        #                  sizes = subsets,
-        #                  rfeControl = ctrl)
-        # 
-        # lmProfile
+# set.seed(100)
+# options(warn=-1)
+# 
+# subsets <- c(1:4)
+# 
+# ctrl <- rfeControl(functions = rfFuncs,
+#                    method = "repeatedcv",
+#                    repeats = 5,
+#                    verbose = FALSE)
+# 
+# lmProfile <- rfe(x=trainData1[, 1:14], y=trainData$Churn,
+#                  sizes = subsets,
+#                  rfeControl = ctrl)
+# 
+# lmProfile
 
 #### '=================' ####
 #### 6. Training and Tuning the model ####
