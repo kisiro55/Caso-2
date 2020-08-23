@@ -1,11 +1,20 @@
-# install.packages(c('caret', 'skimr', 'RANN', 'randomForest', 'fastAdaboost', 'gbm', 'xgboost', 'caretEnsemble', 'C50', 'earth'))
+# install.packages(c('caret', 'skimr', 'RANN', 'randomForest', 'fastAdaboost', 'gbm', 'xgboost', 'caretEnsemble', 'C50', 'earth', 'RWeka'))
 
+library(caret)
+library(RWeka)
 library (C50)
 library(foreign)
-library(caret)
 
+# Useful Links
+## https://stackoverflow.com/questions/40752070/issues-installing-rweka
 ## https://www.machinelearningplus.com/machine-learning/caret-package/ ##
-## LEO LOS DATOS DE LA FASE DE PREPROCESAMIENTO
+
+
+#### 3 Data Preparation and Preprocessing ####
+
+#### 3.0 Preparo el DS ####
+
+# LEO LOS DATOS DE LA FASE DE PREPROCESAMIENTO
 
 DS1 <- read.csv('DS1.csv', stringsAsFactors=TRUE) # subscr_test_v1.csv
 DS2 <- read.csv('DS2.csv', stringsAsFactors=TRUE) #subscr_training_v1.csv'
@@ -15,10 +24,10 @@ DS2 <- read.csv('DS2.csv', stringsAsFactors=TRUE) #subscr_training_v1.csv'
 DS1 <- DS1[-c(1,5)]
 DS2 <- DS2[-c(1,5,19,20)]
 
-## Agrego Variable Ambos Planes
+# Agrego Variable Ambos Planes
 DS1$Ambos_planes <- ifelse(as.character(DS1$Intl_Plan) == as.character(DS1$Vmail_Plan), "TRUE", "FALSE")
 DS1$Ambos_planes <- as.factor(DS1$Ambos_planes)
-## Agrego Variable "Mas de 3 Llamadas"
+# Agrego Variable "Mas de 3 Llamadas"
 DS1$CustServ_Calls <- as.factor(DS1$CustServ_Calls)
 levels(DS1$CustServ_Calls)
 normales <- c("0", "1", "2", "3")                    
@@ -32,7 +41,6 @@ table(DS1$Customer_service)
 # Reordeno columnas del dataset para que Churn quede al final
 DS1 <- subset(DS1, select=c(State:CustServ_Calls,Customer_service,Ambos_planes,Churn))
 
-#### 3 Data Preparation and Preprocessing ####
 #### 3.1 -  How to split the dataset into training and validation? ####
 
 # Create the training and test datasets
@@ -52,11 +60,27 @@ dim(trainData)
 x = trainData[, 1:17]
 y = trainData$Churn
 
-#### 3.2. Descriptive statistics ####
-library(skimr)
-skimmed <- skim_to_wide(trainData)
-skimmed[, c(1:15)]
-#### Nota: probar pasar Area_Code a Factor? Entender la logica del areacode vs. States ####
+#### Balanceo la muestra ####
+
+# a) opcion downSampledTrain
+# set seed and up sample with the following syntax:
+set.seed(123)
+downSampledTrain <- caret::downSample(x = trainData[, 1:17],
+                                  y = trainData$Churn,
+                                  yname = 'Churn')
+
+# ensure the classes are now balanced
+prop.table(table(downSampledTrain$Churn))
+
+# b) opcion downSampledTrain
+set.seed(123)
+upSampledTrain <- caret::upSample(x = trainData[, 1:17],
+                                      y = trainData$Churn,
+                                      yname = 'Churn')
+
+# ensure the classes are now balanced
+prop.table(table(upSampledTrain$Churn))
+
 
 #### '=================' ####
 #### 6. Training and Tuning the model ####
@@ -65,7 +89,7 @@ skimmed[, c(1:15)]
 # See available algorithms in caret
 modelnames <- paste(names(getModelInfo()), collapse=',  ')
 modelnames
-modelLookup('C5.0')
+modelLookup('J48')
 
 # Set the seed for reproducibility
 set.seed(100)
@@ -77,43 +101,31 @@ ctrl <- trainControl(method="cv",
                      classProbs=T,
                      savePredictions = T)
 
-# rfFit <- train(Class ~ ., data=Sonar, 
-#                method="rf", preProc=c("center", "scale"), 
-#                trControl=ctrl)
+## Training different models
 
-
-model_C5 = train(Churn ~ ., data=trainData, method='C5.0', trControl=ctrl)
+model_C5 = train(Churn ~ ., data=downSampledTrain, method='C5.0', trControl=ctrl)
 fitted <- predict(model_C5)
 model_C5
 
-plot(model_C5, main="Model Accuracies with C5.0")
+model_J48 = train(Churn ~ ., data=downSampledTrain, method='J48', trControl=ctrl)
+fitted <- predict(model_C5)
+model_J48
 
 
-#### 6.2 How to compute variable importance? ####
-varimp_C5 <- varImp(model_C5)
-plot(varimp_C5, main="Variable Importance with C5.0")
+## Training different models
+predicted_C5 <- predict(model_C5, testData[,1:17])
+head(predicted_C5)
 
-#### 6.3. Prepare the test dataset and predict ####
-# Step 1: Impute missing values 
-# testData2 <- predict(preProcess_missingdata_model, testData)  
+predicted_J48 <- predict(model_C5, testData[,1:17])
+head(predicted_J48)
 
-# Step 2: Create one-hot encodings (dummy variables)
-# testData2 <- predict(dummies_model, testData)
 
-# Step 3: Transform the features to range between 0 and 1
-# testData3 <- predict(preProcess_range_model, testData2)
-
-# View
-head(testData[, 1:17])
-
-#### 6.4. Predict on testData ####
-# Predict on testData
-predicted <- predict(model_C5, testData[,1:17])
-head(predicted)
 
 #### 6.5. Confusion Matrix ####
 # Compute the confusion matrix
-confusionMatrix(reference = testData$Churn, data = predicted, mode='everything', positive='True.')
+confusionMatrix(reference = testData$Churn, data = predicted_C5, mode='everything', positive='True.')
+
+confusionMatrix(reference = testData$Churn, data = predicted_J48, mode='everything', positive='True.')
 
 
 

@@ -20,7 +20,7 @@ subscriptores.raw <- read.csv2(file.choose())
 
 # Verificacion de las variables y su tipo
 str(subscriptores.raw)
-
+summary(subscriptores.raw)
 # La variable Area_Code se cargo como numerica pero en realidad es una variable categorica.
 # Utilizamos la funcion mutate para convertirla al tipo de dato factor
 # subscriptores.raw <- mutate(subscriptores.raw, Area_Code = as.factor(Area_Code))

@@ -120,21 +120,21 @@ str(trainData1$State)
 summary(trainData1$State)
 dim(trainData1$State)
 ### ! Descomentar ####
-# featurePlot(x = trainData1[, 1:14], 
-#             y = trainData1$Churn,
-#             plot = "box",
-#             strip=strip.custom(par.strip.text=list(cex=.7)),
-#             scales = list(x = list(relation="free"), 
-#                           y = list(relation="free")))
-# 
-# 
-# 
-# featurePlot(x = trainData1[, 1:14], 
-#             y = trainData1$Churn, 
-#             plot = "density",
-#             strip=strip.custom(par.strip.text=list(cex=.7)),
-#             scales = list(x = list(relation="free"), 
-#                           y = list(relation="free")))
+featurePlot(x = trainData1[, 1:14],
+            y = trainData1$Churn,
+            plot = "box",
+            strip=strip.custom(par.strip.text=list(cex=.7)),
+            scales = list(x = list(relation="free"),
+                          y = list(relation="free")))
+
+
+
+featurePlot(x = trainData1[, 1:14],
+            y = trainData1$Churn,
+            plot = "density",
+            strip=strip.custom(par.strip.text=list(cex=.7)),
+            scales = list(x = list(relation="free"),
+                          y = list(relation="free")))
 
 #### Conclusion: Se observa la importancia de CustServ_Calls, Day_mins y Intl_plan en la variable a predecir Churn. So to be safe, let’s not arrive at conclusions about excluding variables prematurely.####
 #### '=================' ####
