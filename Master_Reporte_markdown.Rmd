@@ -54,7 +54,6 @@ library (tidyverse)     #Manipulacion de datasets
 library(vcd)            #Visualizacion de datos categoricos
 library(GGally)         #Extension de ggplot2 para combinacion de graficos/matrices
 library(MASS)           #Utilizado para la estimacion del mve en distancias de Mahalanobis
-library(caret)          #Modelos y optimizacion de parametros
 ```
 
 # Introducción
@@ -343,23 +342,7 @@ subscriptores.dep$Test_Split <- runif(dim(subscriptores.dep)[1])
 subscriptores.test <- subscriptores.dep[subscriptores.dep$Test_Split <= 0.1,]
 subscriptores.training <- subscriptores.dep[subscriptores.dep$Test_Split > 0.1,]
 
-########################
-#Otra manera de hacer el split que conserva el % de clases en TEST
-
-# Step 1: Get row numbers for the training data
-trainRowNumbers <- createDataPartition(orange$Purchase, p=0.8, list=FALSE)
-
-# Step 2: Create the training  dataset
-trainData <- orange[trainRowNumbers,]
-
-# Step 3: Create the test dataset
-testData <- orange[-trainRowNumbers,]
-
-# Store X and Y for later use.
-x = trainData[, 2:18]
-y = trainData$Purchase
-
-#Notas: al parecer no hace falta realizar el hot encoding para dec trees. link: https://www.quora.com/Can-decision-trees-handle-categorical-variable-without-preprocessing-eg-without-changing-to-labels-or-hot-encoders
+#Ejemplo de edicion
 ```
 
 

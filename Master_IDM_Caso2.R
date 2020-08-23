@@ -222,8 +222,10 @@ ggpairs(subscriptores.red[columnas.num], aes(color=subscriptores.red$Outlier),
 subscriptores.out <- subscriptores.red[subscriptores.red$Outlier == TRUE,] 
 subscriptores.dep <- subscriptores.red[subscriptores.red$Outlier == FALSE,] 
 
+
 #### 2.Genero el Dataset2 (DS2):Idem DS1, quitandole outliers por mahalanobis #######
 write.csv(subscriptores.dep,'DS2.csv')
+
 
 # Dividimos en el dataset depurado (sin outliers) en 2 datasets, uno de test y otro de pruebas
 # Para cada registro generamos un numero aleatorio basado en una distribucion uniforme y lo 
@@ -239,8 +241,5 @@ subscriptores.training <- subscriptores.dep[subscriptores.dep$Test_Split > 0.1,]
 
 View(subscriptores.test)
 dim(subscriptores.training)
-
-
-
 
 
